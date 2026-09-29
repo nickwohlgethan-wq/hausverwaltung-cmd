@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button, Field, Screen } from '@/components/ui';
 import { formatDate, isoToInput, monthOf, parseDate } from '@/lib/dates';
 import { useParam, useToday } from '@/lib/hooks';
-import { uid } from '@/lib/ids';
+import { newInviteCode, uid } from '@/lib/ids';
 import { useStore } from '@/lib/store';
 
 export default function MietvertragFormular() {
@@ -30,12 +30,15 @@ export default function MietvertragFormular() {
     dispatch({
       type: 'saveTenant',
       tenant: {
-        id: existing?.id ?? uid('t'),
+        id: existing?.id ?? uid(),
         unitId,
         name: name.trim(),
         email: email.trim(),
         phone: phone.trim(),
         moveIn: moveInISO,
+        // Neue Mieter bekommen sofort einen Einladungscode für den App-Zugang.
+        inviteCode: existing ? existing.inviteCode : newInviteCode(),
+        claimed: existing?.claimed ?? false,
       },
     });
     // Neue Mieter sollen sofort eine Sollstellung für den laufenden Monat haben.
@@ -48,9 +51,9 @@ export default function MietvertragFormular() {
   return (
     <Screen>
       <Stack.Screen options={{ title: existing ? 'Mieter bearbeiten' : 'Neuer Mieter' }} />
-      <Field label="Name" value={name} onChangeText={setName} error={submitted && !name.trim() ? 'Pflichtfeld' : undefined} />
-      <Field label="E-Mail (optional)" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
-      <Field label="Telefon (optional)" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+      <Field label="Name" value={name} onChangeText={setName} maxLength={200} error={submitted && !name.trim() ? 'Pflichtfeld' : undefined} />
+      <Field label="E-Mail (optional)" value={email} onChangeText={setEmail} maxLength={320} keyboardType="email-address" autoCapitalize="none" />
+      <Field label="Telefon (optional)" value={phone} onChangeText={setPhone} maxLength={50} keyboardType="phone-pad" />
       <Field
         label="Einzugsdatum"
         value={moveIn}

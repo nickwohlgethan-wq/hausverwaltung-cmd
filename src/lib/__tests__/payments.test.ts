@@ -1,6 +1,6 @@
 import { generateMonth, paymentStatus, summarize } from '../payments';
 import { reducer } from '../reducer';
-import { createSeed } from '../seed';
+import { createSeed } from '../__fixtures__/seed';
 import type { Payment } from '../types';
 
 const base: Payment = {

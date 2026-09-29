@@ -14,7 +14,7 @@ import { useStore } from '@/lib/store';
 import { useTheme } from '@/theme';
 
 export default function TicketDetail() {
-  const { db, session, dispatch } = useStore();
+  const { db, session, profile, dispatch } = useStore();
   const theme = useTheme();
   const id = useParam('id');
   const ticket = db.tickets.find((t) => t.id === id);
@@ -39,7 +39,7 @@ export default function TicketDetail() {
     );
   }
 
-  const authorName = isVerwalter ? 'Hausverwaltung' : (tenant?.name ?? 'Mieter');
+  const authorName = isVerwalter ? (profile?.displayName ?? 'Hausverwaltung') : (tenant?.name ?? 'Mieter');
 
   function send() {
     const trimmed = text.trim();
@@ -48,7 +48,7 @@ export default function TicketDetail() {
       type: 'addComment',
       ticketId: ticket.id,
       comment: {
-        id: uid('cm'),
+        id: uid(),
         authorRole: session!.role,
         authorName,
         text: trimmed,
@@ -111,6 +111,7 @@ export default function TicketDetail() {
         value={text}
         onChangeText={setText}
         multiline
+        maxLength={5000}
         placeholder={isVerwalter ? 'Nachricht an den Mieter …' : 'Nachricht an die Verwaltung …'}
       />
       <Pressable

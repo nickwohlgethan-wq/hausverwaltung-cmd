@@ -1,4 +1,4 @@
-import { createSeed } from '../seed';
+import { createSeed } from '../__fixtures__/seed';
 import { computeStatement, defaultKey, occupiedMonths } from '../utilities';
 import type { Db } from '../types';
 
@@ -31,8 +31,8 @@ describe('computeStatement', () => {
       { id: 'b', propertyId: 'p', name: 'B', floor: '', areaSqm: 150, rooms: 4, baseRent: 0, utilitiesPrepayment: 30000 },
     ],
     tenants: [
-      { id: 'ta', unitId: 'a', name: 'A', email: '', phone: '', moveIn: '2020-01-01' },
-      { id: 'tb', unitId: 'b', name: 'B', email: '', phone: '', moveIn: '2025-07-01' },
+      { id: 'ta', unitId: 'a', name: 'A', email: '', phone: '', moveIn: '2020-01-01', inviteCode: null, claimed: false },
+      { id: 'tb', unitId: 'b', name: 'B', email: '', phone: '', moveIn: '2025-07-01', inviteCode: null, claimed: false },
     ],
     payments: [],
     costs: [
@@ -75,7 +75,7 @@ describe('computeStatement', () => {
   });
 
   it('summiert die Anteile aller Mieter höchstens auf die Gesamtkosten', () => {
-    const full = { ...db, tenants: db.tenants.map((t) => ({ ...t, moveIn: '2020-01-01' })) };
+    const full = { ...db, tenants: db.tenants.map((t) => ({ ...t, moveIn: '2020-01-01', inviteCode: null, claimed: false })) };
     const total = full.tenants.reduce((s, t) => s + computeStatement(full, t, 2025)!.totalShare, 0);
     expect(total).toBe(160000);
   });

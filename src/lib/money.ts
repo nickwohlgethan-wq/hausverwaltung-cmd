@@ -34,3 +34,6 @@ export function parseDecimal(input: string): number | null {
   if (!/^\d+(\.\d+)?$/.test(s)) return null;
   return parseFloat(s);
 }
+
+/** Größter zulässiger Betrag (1 Mio. €) – bleibt weit unter dem Integer-Limit der Datenbank. */
+export const MAX_CENTS = 100_000_000;

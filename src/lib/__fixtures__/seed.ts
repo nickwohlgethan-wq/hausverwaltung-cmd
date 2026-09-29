@@ -1,8 +1,8 @@
-import { addMonths, monthOf, todayISO } from './dates';
-import { amountDue } from './payments';
-import type { Db, Payment, Ticket } from './types';
+import { addMonths, monthOf, todayISO } from '../dates';
+import { amountDue } from '../payments';
+import type { Db, Payment, Ticket } from '../types';
 
-/** Demo-Daten, relativ zum heutigen Datum, damit Zahlungen und Tickets immer aktuell wirken. */
+/** Beispieldaten für Tests, relativ zu `now`. */
 export function createSeed(now: Date = new Date()): Db {
   const today = todayISO(now);
   const thisMonth = monthOf(today);
@@ -29,6 +29,8 @@ export function createSeed(now: Date = new Date()): Db {
       email: 'anna.schneider@example.com',
       phone: '0221 1234567',
       moveIn: '2022-04-01',
+      inviteCode: null,
+      claimed: true,
     },
     {
       id: 't2',
@@ -37,6 +39,8 @@ export function createSeed(now: Date = new Date()): Db {
       email: 'murat.yilmaz@example.com',
       phone: '0176 5551234',
       moveIn: '2023-09-01',
+      inviteCode: null,
+      claimed: true,
     },
     {
       id: 't3',
@@ -45,6 +49,8 @@ export function createSeed(now: Date = new Date()): Db {
       email: 'kowalski@example.com',
       phone: '0221 7654321',
       moveIn: `${lastYear}-07-01`,
+      inviteCode: '0A1B2C3D4E5F',
+      claimed: false,
     },
     {
       id: 't4',
@@ -53,6 +59,8 @@ export function createSeed(now: Date = new Date()): Db {
       email: 'lena.hoffmann@example.com',
       phone: '040 9876543',
       moveIn: '2021-01-01',
+      inviteCode: null,
+      claimed: true,
     },
   ];
 

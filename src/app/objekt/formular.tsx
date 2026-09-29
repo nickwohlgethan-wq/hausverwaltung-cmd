@@ -26,7 +26,7 @@ export default function ObjektFormular() {
     dispatch({
       type: 'saveProperty',
       property: {
-        id: existing?.id ?? uid('p'),
+        id: existing?.id ?? uid(),
         name: name.trim(),
         street: street.trim(),
         zip: zip.trim(),
@@ -39,10 +39,10 @@ export default function ObjektFormular() {
   return (
     <Screen>
       <Stack.Screen options={{ title: existing ? 'Objekt bearbeiten' : 'Neues Objekt' }} />
-      <Field label="Name" value={name} onChangeText={setName} placeholder="z. B. Lindenhof" error={missing(name)} />
-      <Field label="Straße und Hausnummer" value={street} onChangeText={setStreet} error={missing(street)} />
-      <Field label="PLZ" value={zip} onChangeText={setZip} keyboardType="number-pad" maxLength={5} error={missing(zip)} />
-      <Field label="Ort" value={city} onChangeText={setCity} error={missing(city)} />
+      <Field label="Name" value={name} onChangeText={setName} maxLength={200} placeholder="z. B. Lindenhof" error={missing(name)} />
+      <Field label="Straße und Hausnummer" value={street} onChangeText={setStreet} maxLength={200} error={missing(street)} />
+      <Field label="PLZ" value={zip} onChangeText={setZip} keyboardType="number-pad" maxLength={20} error={missing(zip)} />
+      <Field label="Ort" value={city} onChangeText={setCity} maxLength={200} error={missing(city)} />
       <Button label="Speichern" icon="checkmark" onPress={save} />
     </Screen>
   );

@@ -3,7 +3,7 @@ import { View } from 'react-native';
 
 import { AccountSection } from '@/components/account-section';
 import { PaymentBadge, TicketStatusBadge } from '@/components/status';
-import { Card, Empty, ListRow, Screen, SectionHeader, Stat, T } from '@/components/ui';
+import { Button, Card, Empty, ListRow, Screen, SectionHeader, Stat, T } from '@/components/ui';
 import { formatMonth, monthOf } from '@/lib/dates';
 import { useToday } from '@/lib/hooks';
 import { formatEUR } from '@/lib/money';
@@ -31,6 +31,16 @@ export default function Dashboard() {
 
   return (
     <Screen>
+      {db.properties.length === 0 ? (
+        <Card>
+          <T variant="heading">Willkommen!</T>
+          <T variant="muted">
+            Dein Arbeitsbereich ist noch leer. Lege zuerst ein Objekt an, dann Wohnungen und Mieter.
+            Für jeden Mieter erzeugt die App einen Einladungscode, mit dem er sich in der App registriert.
+          </T>
+          <Button label="Erstes Objekt anlegen" icon="add-circle-outline" onPress={() => router.push('/objekt/formular')} />
+        </Card>
+      ) : null}
       <T variant="heading">{formatMonth(month)}</T>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
         <Stat label="Soll" value={formatEUR(summary.due)} />
@@ -77,7 +87,7 @@ export default function Dashboard() {
         ))
       )}
 
-      <AccountSection name="Verwalter" />
+      <AccountSection />
     </Screen>
   );
 }

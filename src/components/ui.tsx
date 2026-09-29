@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
-import { type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import {
   ActivityIndicator,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,23 +15,31 @@ import {
   type ViewStyle,
 } from 'react-native';
 
+import { useStore } from '@/lib/store';
 import { radius, space, toneColors, useTheme, type Tone } from '@/theme';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
 const MAX_WIDTH = 720;
 
-/** Scrollbarer Bildschirm mit einheitlichem Innenabstand; auf breiten Displays zentriert. */
+/**
+ * Scrollbarer Bildschirm mit einheitlichem Innenabstand; auf breiten Displays zentriert.
+ * Herunterziehen lädt die Daten neu (abschaltbar mit `refreshable={false}`).
+ */
 export function Screen({
   children,
   scroll = true,
+  refreshable = true,
   style,
 }: {
   children: ReactNode;
   scroll?: boolean;
+  refreshable?: boolean;
   style?: StyleProp<ViewStyle>;
 }) {
   const theme = useTheme();
+  const { refresh } = useStore();
+  const [refreshing, setRefreshing] = useState(false);
   const inner = [styles.screenInner, style];
   if (!scroll) {
     return (
@@ -44,7 +53,22 @@ export function Screen({
       style={[styles.flex, { backgroundColor: theme.bg }]}
       contentContainerStyle={inner}
       keyboardShouldPersistTaps="handled"
-      contentInsetAdjustmentBehavior="automatic">
+      contentInsetAdjustmentBehavior="automatic"
+      refreshControl={
+        refreshable ? (
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={async () => {
+              setRefreshing(true);
+              try {
+                await refresh();
+              } finally {
+                setRefreshing(false);
+              }
+            }}
+          />
+        ) : undefined
+      }>
       {children}
     </ScrollView>
   );

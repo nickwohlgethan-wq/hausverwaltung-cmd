@@ -1,58 +1,72 @@
-import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import { View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Button, Card, ListRow, Screen, SectionHeader, T } from '@/components/ui';
-import { unitLabel } from '@/lib/selectors';
-import { useStore } from '@/lib/store';
+import { AuthLayout } from '@/components/auth-layout';
+import { Button, Field, T } from '@/components/ui';
+import { useAuth } from '@/lib/auth';
 import { useTheme } from '@/theme';
 
 export default function Login() {
-  const { db, signIn } = useStore();
+  const { signIn } = useAuth();
+  const router = useRouter();
   const theme = useTheme();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit() {
+    if (busy) return;
+    if (!email.trim() || !password) {
+      setError('Bitte E-Mail und Passwort eingeben.');
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    const result = await signIn(email, password);
+    setBusy(false);
+    if (result.ok) return; // Die Navigation folgt automatisch aus der neuen Anmeldung.
+    if (result.code === 'email_not_confirmed') {
+      router.push({ pathname: '/bestaetigen', params: { email: email.trim() } });
+      return;
+    }
+    setError(result.message);
+  }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }}>
-      <Screen>
-        <View style={{ alignItems: 'center', gap: 8, paddingVertical: 24 }}>
-          <View
-            style={{
-              width: 72,
-              height: 72,
-              borderRadius: 20,
-              backgroundColor: theme.primary,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-            <Ionicons name="business" size={38} color={theme.onPrimary} />
-          </View>
-          <T variant="title">Hausverwaltung</T>
-          <T variant="muted" style={{ textAlign: 'center' }}>
-            Objekte, Mieten, Nebenkosten und Reparaturen an einem Ort.
-          </T>
-        </View>
-
-        <Card>
-          <T variant="heading">Für Verwalter</T>
-          <T variant="muted">Alle Objekte, Zahlungen, Abrechnungen und Tickets verwalten.</T>
-          <View style={{ height: 8 }} />
-          <Button label="Als Verwalter anmelden" icon="briefcase-outline" onPress={() => signIn({ role: 'verwalter' })} />
-        </Card>
-
-        <SectionHeader title="Für Mieter" />
-        {db.tenants.map((t) => (
-          <ListRow
-            key={t.id}
-            title={t.name}
-            subtitle={unitLabel(db, t.unitId)}
-            onPress={() => signIn({ role: 'mieter', tenantId: t.id })}
-          />
-        ))}
-
-        <T variant="caption" style={{ textAlign: 'center', marginTop: 8 }}>
-          Demo-Anmeldung ohne Passwort. Alle Daten liegen nur lokal auf diesem Gerät.
+    <AuthLayout title="Hausverwaltung" subtitle="Objekte, Mieten, Nebenkosten und Reparaturen an einem Ort.">
+      <Field
+        label="E-Mail"
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
+        autoCorrect={false}
+        autoComplete="email"
+        textContentType="emailAddress"
+      />
+      <Field
+        label="Passwort"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+        autoCapitalize="none"
+        autoComplete="current-password"
+        textContentType="password"
+        onSubmitEditing={submit}
+        returnKeyType="go"
+      />
+      {error ? (
+        <T variant="muted" color={theme.danger} accessibilityRole="alert">
+          {error}
         </T>
-      </Screen>
-    </SafeAreaView>
+      ) : null}
+      <Button label="Anmelden" icon="log-in-outline" onPress={submit} loading={busy} />
+      <View style={{ gap: 8, marginTop: 8 }}>
+        <Button label="Passwort vergessen?" variant="secondary" onPress={() => router.push('/passwort-vergessen')} />
+        <Button label="Neues Konto erstellen" variant="secondary" onPress={() => router.push('/registrieren')} />
+      </View>
+    </AuthLayout>
   );
 }

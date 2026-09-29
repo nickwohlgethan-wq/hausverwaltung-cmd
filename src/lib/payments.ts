@@ -32,7 +32,7 @@ export function generateMonth(db: Db, month: string): Payment[] {
 
 export function newPayment(tenant: Tenant, unit: Unit, month: string): Payment {
   return {
-    id: uid('pay'),
+    id: uid(),
     tenantId: tenant.id,
     month,
     rentDue: unit.baseRent,

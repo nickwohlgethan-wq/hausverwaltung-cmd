@@ -29,6 +29,10 @@ export type Tenant = {
   phone: string;
   /** Einzugsdatum, ISO */
   moveIn: string;
+  /** Einmaliger Einladungscode (12 Zeichen), solange der Mieter sich noch nicht registriert hat */
+  inviteCode: string | null;
+  /** true, sobald der Mieter ein Konto mit dem Einladungscode verknüpft hat */
+  claimed: boolean;
 };
 
 export type Payment = {
@@ -81,6 +85,9 @@ export type Ticket = {
   comments: TicketComment[];
 };
 
+/** Gesamtfläche und Wohnungszahl eines Hauses (für die Verteilung der Nebenkosten). */
+export type PropertyTotals = { totalArea: number; unitCount: number };
+
 export type Db = {
   properties: Property[];
   units: Unit[];
@@ -88,6 +95,22 @@ export type Db = {
   payments: Payment[];
   costs: CostItem[];
   tickets: Ticket[];
+  /**
+   * Nur für Mieter gesetzt: Sie sehen nur die eigene Wohnung, brauchen für die Abrechnung aber
+   * die Summen des Hauses. Für Verwalter fehlt das Feld, die Summen ergeben sich aus `units`.
+   */
+  totals?: Record<string, PropertyTotals>;
 };
+
+export const EMPTY_DB: Db = {
+  properties: [],
+  units: [],
+  tenants: [],
+  payments: [],
+  costs: [],
+  tickets: [],
+};
+
+export type Profile = { id: string; role: Role; displayName: string };
 
 export type Session = { role: 'verwalter' } | { role: 'mieter'; tenantId: string };

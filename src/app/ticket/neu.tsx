@@ -24,7 +24,7 @@ export default function TicketNeu() {
   function save() {
     setSubmitted(true);
     if (!mieter || !title.trim()) return;
-    const id = uid('k');
+    const id = uid();
     dispatch({
       type: 'createTicket',
       ticket: {
@@ -49,6 +49,7 @@ export default function TicketNeu() {
         label="Was ist das Problem?"
         value={title}
         onChangeText={setTitle}
+        maxLength={200}
         placeholder="z. B. Heizung wird nicht warm"
         error={submitted && !title.trim() ? 'Bitte kurz beschreiben, worum es geht' : undefined}
       />
@@ -69,6 +70,7 @@ export default function TicketNeu() {
         value={description}
         onChangeText={setDescription}
         multiline
+        maxLength={5000}
         placeholder="Seit wann besteht das Problem? Wo genau?"
       />
       <Button label="Meldung senden" icon="send" onPress={save} />

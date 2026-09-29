@@ -6,7 +6,7 @@ import { Button, Card, Empty, Field, KeyValue, Screen, SectionHeader, T } from '
 import { confirm } from '@/lib/confirm';
 import { formatDate, formatMonth, parseDate } from '@/lib/dates';
 import { useParam, useToday } from '@/lib/hooks';
-import { centsToInput, formatEUR, parseEUR } from '@/lib/money';
+import { centsToInput, formatEUR, MAX_CENTS, parseEUR } from '@/lib/money';
 import { amountDue, outstanding, paymentStatus } from '@/lib/payments';
 import { unitLabel } from '@/lib/selectors';
 import { useStore } from '@/lib/store';
@@ -38,7 +38,7 @@ export default function ZahlungDetail() {
 
   function book() {
     setSubmitted(true);
-    if (!payment || amountCents === null || amountCents <= 0 || !dateISO) return;
+    if (!payment || amountCents === null || amountCents <= 0 || payment.paid + amountCents > MAX_CENTS || !dateISO) return;
     dispatch({ type: 'bookPayment', id: payment.id, paid: payment.paid + amountCents, paidOn: dateISO });
     router.back();
   }
@@ -72,7 +72,7 @@ export default function ZahlungDetail() {
             value={amount}
             onChangeText={setAmount}
             keyboardType="decimal-pad"
-            error={submitted && (amountCents === null || amountCents <= 0) ? 'Bitte einen Betrag größer 0 eingeben' : undefined}
+            error={submitted && (amountCents === null || amountCents <= 0 || payment.paid + amountCents > MAX_CENTS) ? 'Bitte einen Betrag größer 0 (insgesamt bis 1.000.000 €) eingeben' : undefined}
           />
           <Field
             label="Zahlungsdatum"

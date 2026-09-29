@@ -1,4 +1,4 @@
-import type { AllocationKey, CostItem, Db, Tenant } from './types';
+import type { AllocationKey, CostItem, Db, PropertyTotals, Tenant } from './types';
 
 export const COST_CATEGORIES = [
   'Heizung',
@@ -56,6 +56,14 @@ export type Statement = {
   balance: number;
 };
 
+/** Gesamtfläche und Wohnungszahl des Hauses; bei Mietern kommen sie vom Server. */
+export function propertyTotals(db: Db, propertyId: string): PropertyTotals {
+  const given = db.totals?.[propertyId];
+  if (given) return given;
+  const units = db.units.filter((u) => u.propertyId === propertyId);
+  return { totalArea: units.reduce((sum, u) => sum + u.areaSqm, 0), unitCount: units.length };
+}
+
 /**
  * Berechnet die Nebenkostenabrechnung eines Mieters für ein Jahr.
  * Leerstehende Wohnungen zählen bei der Verteilung mit, ihr Anteil bleibt beim Eigentümer.
@@ -64,12 +72,11 @@ export type Statement = {
 export function computeStatement(db: Db, tenant: Tenant, year: number): Statement | null {
   const unit = db.units.find((u) => u.id === tenant.unitId);
   if (!unit) return null;
-  const propertyUnits = db.units.filter((u) => u.propertyId === unit.propertyId);
-  const totalArea = propertyUnits.reduce((sum, u) => sum + u.areaSqm, 0);
+  const { totalArea, unitCount } = propertyTotals(db, unit.propertyId);
   const months = occupiedMonths(tenant.moveIn, year);
   const costs = db.costs.filter((c) => c.propertyId === unit.propertyId && c.year === year);
 
-  const lines = costs.map((c) => toLine(c, unit.areaSqm, totalArea, propertyUnits.length, months));
+  const lines = costs.map((c) => toLine(c, unit.areaSqm, totalArea, unitCount, months));
   const totalShare = lines.reduce((sum, l) => sum + l.share, 0);
   const prepaid = unit.utilitiesPrepayment * months;
 

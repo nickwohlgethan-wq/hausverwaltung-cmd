@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button, Field, Screen, Segmented } from '@/components/ui';
 import { useParam } from '@/lib/hooks';
 import { uid } from '@/lib/ids';
-import { parseEUR } from '@/lib/money';
+import { MAX_CENTS, parseEUR } from '@/lib/money';
 import { useStore } from '@/lib/store';
 import { ALLOCATION_LABEL, COST_CATEGORIES, defaultKey } from '@/lib/utilities';
 import type { AllocationKey } from '@/lib/types';
@@ -32,10 +32,10 @@ export default function KostenFormular() {
 
   function save() {
     setSubmitted(true);
-    if (!propertyId || !Number.isInteger(year) || !name || amountCents === null || amountCents <= 0) return;
+    if (!propertyId || !Number.isInteger(year) || !name || amountCents === null || amountCents <= 0 || amountCents > MAX_CENTS) return;
     dispatch({
       type: 'saveCost',
-      cost: { id: uid('c'), propertyId, year, category: name, amount: amountCents, key },
+      cost: { id: uid(), propertyId, year, category: name, amount: amountCents, key },
     });
     router.back();
   }
@@ -54,6 +54,7 @@ export default function KostenFormular() {
           label="Bezeichnung"
           value={customName}
           onChangeText={setCustomName}
+          maxLength={100}
           error={submitted && !name ? 'Pflichtfeld' : undefined}
         />
       ) : null}
@@ -62,7 +63,7 @@ export default function KostenFormular() {
         value={amount}
         onChangeText={setAmount}
         keyboardType="decimal-pad"
-        error={submitted && (amountCents === null || amountCents <= 0) ? 'Bitte einen Betrag größer 0 eingeben' : undefined}
+        error={submitted && (amountCents === null || amountCents <= 0 || amountCents > MAX_CENTS) ? 'Bitte einen Betrag zwischen 0 und 1.000.000 € eingeben' : undefined}
       />
       <Segmented
         label="Verteilung auf die Wohnungen"

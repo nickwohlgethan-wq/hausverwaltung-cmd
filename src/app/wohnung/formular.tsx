@@ -4,8 +4,12 @@ import { useState } from 'react';
 import { Button, Field, Screen } from '@/components/ui';
 import { useParam } from '@/lib/hooks';
 import { uid } from '@/lib/ids';
-import { centsToInput, parseDecimal, parseEUR } from '@/lib/money';
+import { centsToInput, MAX_CENTS, parseDecimal, parseEUR } from '@/lib/money';
 import { useStore } from '@/lib/store';
+
+// Grenzen entsprechen den Spaltentypen der Datenbank (numeric(8,2) bzw. numeric(4,1)) mit Reserve.
+const MAX_AREA = 100_000;
+const MAX_ROOMS = 100;
 
 const dec = (n: number) => String(n).replace('.', ',');
 
@@ -39,17 +43,21 @@ export default function WohnungFormular() {
       !name.trim() ||
       areaValue === null ||
       areaValue <= 0 ||
+      areaValue > MAX_AREA ||
       roomsValue === null ||
       roomsValue <= 0 ||
+      roomsValue > MAX_ROOMS ||
       rentValue === null ||
-      prepayValue === null
+      rentValue > MAX_CENTS ||
+      prepayValue === null ||
+      prepayValue > MAX_CENTS
     ) {
       return;
     }
     dispatch({
       type: 'saveUnit',
       unit: {
-        id: existing?.id ?? uid('u'),
+        id: existing?.id ?? uid(),
         propertyId,
         name: name.trim(),
         floor: floor.trim(),
@@ -65,17 +73,17 @@ export default function WohnungFormular() {
   return (
     <Screen>
       <Stack.Screen options={{ title: existing ? 'Wohnung bearbeiten' : 'Neue Wohnung' }} />
-      <Field label="Bezeichnung" value={name} onChangeText={setName} placeholder="z. B. Wohnung 3" error={err(!name.trim(), 'Pflichtfeld')} />
-      <Field label="Lage (optional)" value={floor} onChangeText={setFloor} placeholder="z. B. 2. OG links" />
-      <Field label="Wohnfläche in m²" value={area} onChangeText={setArea} keyboardType="decimal-pad" error={err(areaValue === null || areaValue <= 0, 'Bitte eine Zahl größer 0 eingeben')} />
-      <Field label="Zimmer" value={rooms} onChangeText={setRooms} keyboardType="decimal-pad" error={err(roomsValue === null || roomsValue <= 0, 'Bitte eine Zahl größer 0 eingeben')} />
-      <Field label="Kaltmiete pro Monat in €" value={rent} onChangeText={setRent} keyboardType="decimal-pad" error={err(rentValue === null, 'Bitte einen Betrag eingeben, z. B. 650,00')} />
+      <Field label="Bezeichnung" value={name} onChangeText={setName} maxLength={200} placeholder="z. B. Wohnung 3" error={err(!name.trim(), 'Pflichtfeld')} />
+      <Field label="Lage (optional)" value={floor} onChangeText={setFloor} maxLength={100} placeholder="z. B. 2. OG links" />
+      <Field label="Wohnfläche in m²" value={area} onChangeText={setArea} keyboardType="decimal-pad" error={err(areaValue === null || areaValue <= 0 || areaValue > MAX_AREA, 'Bitte eine Zahl zwischen 0 und 100.000 eingeben')} />
+      <Field label="Zimmer" value={rooms} onChangeText={setRooms} keyboardType="decimal-pad" error={err(roomsValue === null || roomsValue <= 0 || roomsValue > MAX_ROOMS, 'Bitte eine Zahl zwischen 0 und 100 eingeben')} />
+      <Field label="Kaltmiete pro Monat in €" value={rent} onChangeText={setRent} keyboardType="decimal-pad" error={err(rentValue === null || rentValue > MAX_CENTS, 'Bitte einen Betrag bis 1.000.000 € eingeben, z. B. 650,00')} />
       <Field
         label="Nebenkosten-Vorauszahlung pro Monat in €"
         value={prepay}
         onChangeText={setPrepay}
         keyboardType="decimal-pad"
-        error={err(prepayValue === null, 'Bitte einen Betrag eingeben, z. B. 180,00')}
+        error={err(prepayValue === null || prepayValue > MAX_CENTS, 'Bitte einen Betrag bis 1.000.000 € eingeben, z. B. 180,00')}
         hint={existing ? 'Gilt für neu angelegte Monate. Bereits angelegte Zahlungen bleiben unverändert.' : undefined}
       />
       <Button label="Speichern" icon="checkmark" onPress={save} />

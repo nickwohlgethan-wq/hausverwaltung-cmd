@@ -76,7 +76,7 @@ export default function MieterUebersicht() {
         <Button label="Schaden melden" icon="construct-outline" onPress={() => router.push('/ticket/neu')} />
       </Card>
 
-      <AccountSection name={tenant.name} />
+      <AccountSection />
     </Screen>
   );
 }
